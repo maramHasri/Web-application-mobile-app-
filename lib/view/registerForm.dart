@@ -1,28 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_internet_application/model/userModel.dart';
+import 'package:flutter_internet_application/service/register.dart';
+import 'package:flutter_internet_application/view/otp.dart'; // ملف السيرفس
 
-class Registerform extends StatelessWidget {
-  const Registerform({super.key});
+class RegisterForm extends StatefulWidget {
+  RegisterForm({super.key});
+
+  @override
+  State<RegisterForm> createState() => _RegisterFormState();
+}
+
+class _RegisterFormState extends State<RegisterForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  final nameController = TextEditingController();
+  final nationalIdController = TextEditingController();
+  final contactController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  final AuthService _authService = AuthServiceImpl();
+  bool _isLoading = false;
+
+  void _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    User user = User(
+      name: nameController.text.trim(),
+      national_id: nationalIdController.text.trim(),
+      identifier: contactController.text.trim(),
+      password: passwordController.text.trim(),
+      role_id: 3,
+    );
+
+    var result = await _authService.register(user);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    print("REGISTER RESULT: $result");
+
+    // إذا رجع identifier موجود، ننتقل لصفحة OTP
+    if (result["identifier"] != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpVerify(identifier: result["identifier"]),
+        ),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpVerify(identifier: result["identifier"]),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-
-    final nameController = TextEditingController();
-    final nationalIdController = TextEditingController();
-    final contactController = TextEditingController();
-    final passwordController = TextEditingController();
-
     return Scaffold(
-      appBar: AppBar(title: const Text("إنشاء حساب"), centerTitle: true),
+      appBar: AppBar(title: Text("إنشاء حساب"), centerTitle: true),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "الاسم الكامل",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -35,31 +87,27 @@ class Registerform extends StatelessWidget {
                   return null;
                 },
               ),
-
-              const SizedBox(height: 20),
-
+              SizedBox(height: 20),
               TextFormField(
                 controller: nationalIdController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "الرقم الوطني",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.length != 10) {
-                    return "الرقم الوطني يجب أن يكون 10 خانات";
-                  }
-                  return null;
-                },
+                // validator: (value) {
+                //   if (value == null || value.length != 11) {
+                //     return "الرقم الوطني يجب أن يكون 11 خانات";
+                //   }
+                //   return null;
+                // },
               ),
-
-              const SizedBox(height: 20),
-
+              SizedBox(height: 20),
               TextFormField(
                 controller: contactController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "الإيميل أو رقم الموبايل",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -69,30 +117,19 @@ class Registerform extends StatelessWidget {
                   if (value == null || value.trim().isEmpty) {
                     return "الرجاء إدخال الإيميل أو رقم الموبايل";
                   }
-
                   final input = value.trim();
-
                   final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
-                  final phoneRegex = RegExp(r'^(095|098)[0-9]{7}$');
 
                   if (emailRegex.hasMatch(input)) {
                     return null;
                   }
-
-                  if (phoneRegex.hasMatch(input)) {
-                    return null;
-                  }
-
-                  return "الرجاء إدخال إيميل صحيح أو رقم موبايل يبدأ بـ 095 أو 098";
                 },
               ),
-
-              const SizedBox(height: 20),
-
+              SizedBox(height: 20),
               TextFormField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "كلمة السر",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -105,45 +142,46 @@ class Registerform extends StatelessWidget {
                   return null;
                 },
               ),
-
-              const SizedBox(height: 50),
-
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Registerform(),
-                        ),
-                      );
-                    },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "إنشاء الحساب",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+              SizedBox(height: 50),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          "إنشاء الحساب",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+// واجهة تجريبية بعد التسجيل
+class HomePage extends StatelessWidget {
+  HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("الصفحة الرئيسية")),
+      body: Center(child: Text("تم تسجيل الدخول بنجاح!")),
     );
   }
 }

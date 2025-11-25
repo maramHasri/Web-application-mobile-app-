@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/view/registerform.dart';
 
 class SignUpOrEnterAsGuest extends StatelessWidget {
-  const SignUpOrEnterAsGuest({super.key});
+  SignUpOrEnterAsGuest({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                 SizedBox(
                   height: 128,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 20),
                     child: Image.asset(
                       'assets/Isolation_Mode.png',
                       fit: BoxFit.contain,
@@ -25,9 +25,9 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
 
-                const Text(
+                Text(
                   "خدمة المواطن",
                   style: TextStyle(
                     fontSize: 16,
@@ -38,10 +38,10 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 60),
+            SizedBox(height: 60),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: EdgeInsets.symmetric(horizontal: 40),
               child: SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -49,9 +49,7 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const Registerform(),
-                      ),
+                      MaterialPageRoute(builder: (context) => RegisterForm()),
                     );
                   },
 
@@ -61,7 +59,7 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "إنشاء حساب",
                     style: TextStyle(
                       fontSize: 18,
@@ -73,22 +71,22 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: EdgeInsets.symmetric(horizontal: 40),
               child: SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: OutlinedButton(
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.blue, width: 1.6),
+                    side: BorderSide(color: Colors.blue, width: 1.6),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "الدخول كزائر",
                     style: TextStyle(
                       fontSize: 18,
