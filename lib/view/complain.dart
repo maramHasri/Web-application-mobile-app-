@@ -320,7 +320,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
     if (success) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ComplaintsPage(userToken: '')),
+        MaterialPageRoute(builder: (context) => ComplaintsPage()),
       );
     }
 

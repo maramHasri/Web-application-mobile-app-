@@ -1,118 +1,112 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_internet_application/model/ComplaintResponse.dart';
+// import 'package:dio/dio.dart';
+// import 'package:flutter_internet_application/model/ComplaintResponse.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// class getComplaintService {
-//   final Dio _dio = Dio(
+// class GetComplaintService {
+//   static final storage = FlutterSecureStorage();
+//   static final Dio dio = Dio(
 //     BaseOptions(
-//       baseUrl: 'http://192.168.1.6:8000/api', // ضع رابط الـ API الأساسي
-
-//       headers: {'Content-Type': 'application/json'},
+//       baseUrl: "http://192.168.1.6:8000",
+//       headers: {"accept": "application/json"},
 //     ),
 //   );
 
-/// جلب جميع شكاوى المستخدم
-// Future<List<Complaint>> getUserComplaints({required String token}) async {
-//   try {
-//     final response = await _dio.get(
-//       '/user/complaints', // endpoint الخاص بالشكاوى
-//       options: Options(
-//         headers: {
-//           'Authorization': 'Bearer $token', // إضافة التوكن
-//         },
-//       ),
-//     );
-
-//     if (response.statusCode == 200 && response.data['success'] == true) {
-//       final List complaintsJson = response.data['data'];
-//       return complaintsJson.map((json) => Complaint.fromJson(json)).toList();
-//     } else {
-//       throw Exception(
-//         'Failed to fetch complaints: ${response.data['message']}',
-//       );
-//     }
-//   } on DioError catch (e) {
-//     // معالجة الأخطاء الخاصة بالـ Dio
-//     if (e.response != null) {
-//       throw Exception(
-//         'Dio error: ${e.response?.statusCode} ${e.response?.statusMessage}',
-//       );
-//     } else {
-//       throw Exception('Dio error: ${e.message}');
-//     }
-//   } catch (e) {
-//     throw Exception('Unexpected error: $e');
-//   }
-// }
-//   Future<List<Complaint>> getUserComplaints({required String token}) async {
+//   /// جلب قائمة الشكاوي
+//   static Future<List<Complaint>> getUserComplaints({String? token}) async {
 //     try {
-//       final response = await _dio.get(
-//         '/user/complaints',
-//         options: Options(headers: {'Authorization': 'Bearer $token'}),
+//       // إذا لم يُمر التوكن كوسيط، خذ التوكن من التخزين
+//       token ??= await storage.read(key: "userToken");
+
+//       if (token == null || token.isEmpty) {
+//         print("Error: User token is empty!");
+//         return [];
+//       }
+
+//       // إرسال الطلب
+//       final res = await dio.get(
+//         "/api/user/complaints",
+//         options: Options(
+//           headers: {
+//             "Authorization": "Bearer $token",
+//             "accept": "application/json",
+//           },
+//           validateStatus: (_) => true, // لالتقاط كل الأكواد حتى 500
+//         ),
 //       );
 
-//       // ✅ اطبع الرد هنا مباشرة
-//       print('Full response: ${response.data}');
+//       // طباعة الديباغ
+//       print("Status code: ${res.statusCode}");
+//       print("Response body: ${res.data}");
 
-//       // الآن قم بتحويل البيانات كما كان
-//       final List complaintsJson = response.data['data'];
-//       return complaintsJson.map((json) => Complaint.fromJson(json)).toList();
-//     } on DioError catch (e) {
-//       if (e.response != null) {
-//         print('Dio error response: ${e.response?.data}');
-//         throw Exception(
-//           'Dio error: ${e.response?.statusCode} ${e.response?.statusMessage}',
-//         );
+//       if (res.statusCode == 200) {
+//         // تحويل الـ JSON إلى قائمة Complaint
+//         final List<dynamic> data = res.data['data'];
+//         return data.map((json) => Complaint.fromJson(json)).toList();
 //       } else {
-//         print('Dio error message: ${e.message}');
-//         throw Exception('Dio error: ${e.message}');
+//         print("Server returned error: ${res.statusCode}");
+//         return [];
 //       }
 //     } catch (e) {
-//       print('Unexpected error: $e');
-//       throw Exception('Unexpected error: $e');
+//       print("Exception while fetching complaints: $e");
+//       return [];
 //     }
 //   }
 // }
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class getComplaintService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://192.168.1.6:8000/api',
-      headers: {'Content-Type': 'application/json'},
-    ),
-  );
+class GetComplaintService {
+  final Dio dio;
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
 
-  /// جلب جميع شكاوى المستخدم مع طباعة الأخطاء
-  Future<List<Complaint>> getUserComplaints({required String token}) async {
+  GetComplaintService({Dio? dio})
+    : dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: "http://192.168.1.6:8000/api",
+              connectTimeout: Duration(seconds: 10),
+              receiveTimeout: Duration(seconds: 10),
+            ),
+          );
+
+  // جلب الشكاوى الخاصة بالمستخدم
+  Future<List<Map<String, dynamic>>> getUserComplaints() async {
     try {
-      final response = await _dio.get(
-        '/user/complaints',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      // استرجاع التوكن المخزن
+      String? userToken = await storage.read(key: 'userToken');
+
+      if (userToken == null || userToken.isEmpty) {
+        print("Error: User token is empty!");
+        return [];
+      }
+
+      // إرسال الطلب مع التوكن في الهيدر
+      final response = await dio.get(
+        "/user/complaints",
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $userToken',
+            'accept': 'application/json',
+          },
+        ),
       );
 
-      // 🔹 هنا: اطبع كامل الـ response قبل التحويل
-      print('--- Full Response ---');
-      print(response.data);
-      print('---------------------');
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.data}");
 
-      // 🔹 هنا: تحقق أن كل عنصر يتحول إلى Complaint بدون مشاكل
-      final List complaintsJson = response.data['data'];
-      final complaints = complaintsJson.map((json) {
-        try {
-          return Complaint.fromJson(json);
-        } catch (e) {
-          print('Error converting JSON to Complaint: $e');
-          print('JSON that caused error: $json');
-          throw e; // يمكن الاستمرار أو إلقاء الاستثناء
-        }
-      }).toList();
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        List complaints = response.data["data"] ?? [];
+        return complaints
+            .map<Map<String, dynamic>>((c) => c as Map<String, dynamic>)
+            .toList();
+      }
 
-      return complaints;
-    } on DioError catch (e) {
-      print('DioError: ${e.response?.statusCode} ${e.response?.data}');
-      throw Exception('Dio error: ${e.message}');
+      print("Error fetching complaints: ${response.data["message"]}");
+      return [];
     } catch (e) {
-      print('Unexpected error: $e');
-      throw Exception('Unexpected error: $e');
+      print("Exception while fetching complaints: $e");
+      return [];
     }
   }
 }
