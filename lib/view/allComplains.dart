@@ -1,86 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_internet_application/model/ComplaintResponse.dart';
-// import 'package:flutter_internet_application/service/getComplain.dart';
-
-// class ComplaintsPage extends StatefulWidget {
-//   final String userToken;
-
-//   const ComplaintsPage({super.key, required this.userToken});
-
-//   @override
-//   State<ComplaintsPage> createState() => _ComplaintsPageState();
-// }
-
-// class _ComplaintsPageState extends State<ComplaintsPage> {
-//   late Future<List<Complaint>> _complaintsFuture;
-//   // final GetComplaintService _service = GetComplaintService();
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _complaintsFuture = GetComplaintService.getUserComplaints(
-//       token: widget.userToken,
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('شكاوي المستخدم')),
-//       body: FutureBuilder<List<Complaint>>(
-//         future: _complaintsFuture,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             // أثناء التحميل
-//             return const Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             // في حال وجود خطأ
-//             return Center(
-//               child: Text(
-//                 'حدث خطأ: ${snapshot.error}',
-//                 style: const TextStyle(color: Colors.red),
-//               ),
-//             );
-//           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//             // في حال عدم وجود بيانات
-//             return const Center(child: Text('لا توجد شكاوى حالياً'));
-//           }
-
-//           // عرض الشكاوى
-//           final complaints = snapshot.data!;
-
-//           return ListView.builder(
-//             itemCount: complaints.length,
-//             itemBuilder: (context, index) {
-//               final complaint = complaints[index];
-//               return Card(
-//                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-//                 child: ListTile(
-//                   title: Text(
-//                     complaint.identifier,
-//                     style: const TextStyle(fontWeight: FontWeight.bold),
-//                   ),
-//                   subtitle: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text('الوصف: ${complaint.description}'),
-//                       Text('الحالة: ${complaint.status}'),
-//                       Text('الوجهة: ${complaint.destinationName}'),
-//                       Text('نوع الشكوى: ${complaint.complaintTypeName}'),
-//                       Text('العنوان: ${complaint.address}'),
-//                       Text('تاريخ الإنشاء: ${complaint.createdAt}'),
-//                     ],
-//                   ),
-//                   isThreeLine: true,
-//                 ),
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/service/getComplain.dart';
 
@@ -104,7 +21,14 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('شكاوي المستخدم')),
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        title: const Text(
+          "شكاوي المستخدم",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _complaintsFuture,
         builder: (context, snapshot) {
@@ -121,41 +45,98 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
             return const Center(child: Text('لا توجد شكاوى حالياً'));
           }
 
-          final complaints = snapshot.data!;
+          final complaints = snapshot.data!.reversed.toList();
 
-          return ListView.builder(
-            itemCount: complaints.length,
-            itemBuilder: (context, index) {
-              final complaint = complaints[index];
-              final user = complaint['user'] ?? {};
-              final complaintType = complaint['complaint_type'] ?? {};
-              final destination = complaint['destination'] ?? {};
-
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  title: Text(
-                    complaint['identifier'] ?? '---',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+          return Padding(
+            padding: const EdgeInsets.only(top: 50),
+            child: ListView.builder(
+              // reverse: true,
+              itemCount: complaints.length,
+              itemBuilder: (context, index) {
+                final complaint = complaints[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('الوصف: ${complaint['description'] ?? '---'}'),
-                      Text('الحالة: ${complaint['status'] ?? '---'}'),
-                      Text('الوجهة: ${destination['name'] ?? '---'}'),
-                      Text('نوع الشكوى: ${complaintType['name'] ?? '---'}'),
-                      Text('العنوان: ${complaint['address'] ?? '---'}'),
-                      Text(
-                        'تاريخ الإنشاء: ${complaint['created_at'] ?? '---'}',
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Directionality(
+                      textDirection:
+                          TextDirection.rtl, // محاذاة النصوص للجهة اليمنى
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // الصف الأول: الحالة والتاريخ
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Text(
+                                      'New',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                complaint['created_at'] ?? '---',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+
+                          // الوصف
+                          Text(
+                            'الوصف: ${complaint['description'] ?? '---'}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // الجهة
+                          Text(
+                            'الجهة: ${complaint['destination']?['name'] ?? '---'}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // نوع الشكوى
+                          Text(
+                            'نوع الشكوى: ${complaint['complaint_type']?['name'] ?? '---'}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
                       ),
-                      Text('مقدم الشكوى: ${user['name'] ?? '---'}'),
-                    ],
+                    ),
                   ),
-                  isThreeLine: true,
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

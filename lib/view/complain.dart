@@ -305,7 +305,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
       data: {...widget.data, "description": descCtrl.text.trim()},
       images: images,
       documents: documents,
-      token: widget.userToken, // توكن المستخدم الصحيح
+      token: widget.userToken,
     );
 
     if (!mounted) return;
@@ -330,7 +330,16 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("تقديم شكوى - الخطوة ٢")),
+      backgroundColor: AppColors.background,
+
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        title: const Text(
+          "تقديم شكوى - الخطوة ٢",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -338,15 +347,25 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
           children: [
             Text("وصف المشكلة", style: TextStyle(fontWeight: FontWeight.bold)),
             Gap(6),
+
             TextField(
               controller: descCtrl,
               maxLines: 5,
               decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[200],
-                border: OutlineInputBorder(
+                enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
+                  borderSide: BorderSide(
+                    color: Color.fromRGBO(33, 150, 243, 1), // أزرق
+                    width: 1,
+                  ),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: Colors.blue, // عند التركيز
+                    width: 2,
+                  ),
                 ),
               ),
             ),
@@ -359,6 +378,8 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
               icon: Icon(Icons.image),
               label: Text("اختيار صور"),
               style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -374,6 +395,8 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
               icon: Icon(Icons.attach_file),
               label: Text("اختيار ملفات"),
               style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -394,6 +417,8 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
                       )
                     : Text("إرسال الشكوى"),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -407,133 +432,3 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
     );
   }
 }
-
-// class ComplaintStepTwo extends StatefulWidget {
-//   const ComplaintStepTwo({super.key});
-
-//   @override
-//   State<ComplaintStepTwo> createState() => _ComplaintStepTwoState();
-// }
-
-// class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
-//   final _formKey = GlobalKey<FormState>();
-
-//   final TextEditingController descriptionController = TextEditingController();
-//   final TextEditingController addressController = TextEditingController();
-
-//   List<File> selectedImages = [];
-//   List<File> selectedDocuments = [];
-
-//   /// Pick multiple images
-//   Future<void> pickImages() async {
-//     final result = await FilePicker.platform.pickFiles(
-//       allowMultiple: true,
-//       type: FileType.image,
-//     );
-
-//     if (result != null && result.files.isNotEmpty) {
-//       setState(() {
-//         selectedImages = result.paths.map((path) => File(path!)).toList();
-//       });
-//     }
-//   }
-
-//   /// Pick documents (PDF / Word / etc.)
-//   Future<void> pickDocuments() async {
-//     final result = await FilePicker.platform.pickFiles(
-//       allowMultiple: true,
-//       type: FileType.custom,
-//       allowedExtensions: ["pdf", "doc", "docx"],
-//     );
-
-//     if (result != null && result.files.isNotEmpty) {
-//       setState(() {
-//         selectedDocuments.addAll(result.paths.map((path) => File(path!)));
-//       });
-//     }
-//   }
-
-//   /// Send complaint
-//   Future<void> send() async {
-//     if (!_formKey.currentState!.validate()) return;
-
-//     final success = await ComplaintService.sendComplaint(
-//       data: {
-//         "description": descriptionController.text,
-//         "address": addressController.text,
-//       },
-//       images: selectedImages,
-//       documents: selectedDocuments,
-//       token: "", // سيتم جلب التوكن داخل الـ service
-//     );
-
-//     if (success) {
-//       if (context.mounted) {
-//         ScaffoldMessenger.of(
-//           context,
-//         ).showSnackBar(const SnackBar(content: Text("تم إرسال الشكوى بنجاح")));
-
-//         Navigator.pushReplacement(
-//           context,
-//           MaterialPageRoute(builder: (_) => const allMyComplaints()),
-//         );
-//       }
-//     } else {
-//       ScaffoldMessenger.of(
-//         context,
-//       ).showSnackBar(const SnackBar(content: Text("فشل إرسال الشكوى")));
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("إرسال شكوى")),
-//       body: SingleChildScrollView(
-//         padding: const EdgeInsets.all(16),
-//         child: Form(
-//           key: _formKey,
-//           child: Column(
-//             children: [
-//               AppTextField(
-//                 hintText: "وصف الشكوى",
-//                 labelText: "الوصف",
-//                 controller: descriptionController,
-//                 validator: (v) => v!.isEmpty ? "الرجاء كتابة وصف الشكوى" : null,
-//               ),
-//               const SizedBox(height: 16),
-
-//               AppTextField(
-//                 hintText: "العنوان",
-//                 labelText: "العنوان",
-//                 controller: addressController,
-//                 validator: (v) => v!.isEmpty ? "الرجاء إدخال العنوان" : null,
-//               ),
-
-//               const SizedBox(height: 20),
-
-//               AppButton(text: "اختيار الصور", onTap: pickImages, width: 330),
-//               if (selectedImages.isNotEmpty)
-//                 Text("تم اختيار ${selectedImages.length} صورة"),
-
-//               const SizedBox(height: 20),
-
-//               AppButton(text: "رفع مستند", onTap: pickDocuments, width: 330),
-//               if (selectedDocuments.isNotEmpty)
-//                 Text("تم اختيار ${selectedDocuments.length} مستند"),
-
-//               const SizedBox(height: 30),
-
-//               AppButton(
-//                 text: "إرسال الشكوى",
-//                 onTap: send,
-//                 width: 330,
-//                 height: 55,
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

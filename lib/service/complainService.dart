@@ -6,7 +6,7 @@ class sendComplainService {
   static final storage = FlutterSecureStorage();
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.1.6:8000",
+      baseUrl: "http://192.168.1.106:8000",
       headers: {"accept": "application/json"},
     ),
   );
