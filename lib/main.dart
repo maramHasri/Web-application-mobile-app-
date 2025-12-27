@@ -1,83 +1,103 @@
-// import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter_internet_application/view/Auth/signUP.dart';
-// import 'firebase_options.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // تهيئة Firebase مرة واحدة فقط
-//   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-//   // الحصول على Device Token وطباعته
-//   String? token = await FirebaseMessaging.instance.getToken();
-//   debugPrint("Device Token: $token");
-
-//   // تشغيل التطبيق مرة واحدة
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       home: SignUpOrEnterAsGuest(),
-//     );
-//   }
-
-// }
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_internet_application/l10n/app_localizations.dart';
 import 'package:flutter_internet_application/view/Auth/signUP.dart';
+import 'package:flutter_internet_application/core/providers/theme_provider.dart';
+import 'package:flutter_internet_application/core/providers/language_provider.dart';
+import 'package:flutter_internet_application/core/providers/app_providers.dart';
 import 'firebase_options.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-// 🔵 Handler للإشعارات في الخلفية
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  debugPrint("🔔 إشعار من الخلفية: ${message.notification?.title}");
+
+  debugPrint("🔔 Background Notification: ${message.notification?.title}");
 }
 
-// نحتاج navigatorKey لعرض الـ pop-up من خارج سياق الواجهة
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🟦 تهيئة Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // 🟦 تسجيل الـ background handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // 🟦 جلب التوكن وطباعة
-  String? token = await FirebaseMessaging.instance.getToken();
-  debugPrint("📱 Device Token: $token");
-
-  // 🟦 تشغيل التطبيق
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final ThemeProvider _themeProvider = ThemeProvider();
+  final LanguageProvider _languageProvider = LanguageProvider();
+
+  @override
+  void initState() {
+    super.initState();
+    _themeProvider.addListener(_onThemeChanged);
+    _languageProvider.addListener(_onLanguageChanged);
+  }
+
+  @override
+  void dispose() {
+    _themeProvider.removeListener(_onThemeChanged);
+    _languageProvider.removeListener(_onLanguageChanged);
+    _themeProvider.dispose();
+    _languageProvider.dispose();
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    setState(() {});
+  }
+
+  void _onLanguageChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey, // ← مهم لإظهار الـ popup
+      locale: _languageProvider.locale,
+      supportedLocales: const [Locale('en'), Locale('ar')],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      themeMode: _themeProvider.themeMode,
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: NotificationHandler(child: SignUpOrEnterAsGuest()),
+      builder: (context, child) {
+        return AppProviders(
+          themeProvider: _themeProvider,
+          languageProvider: _languageProvider,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+      home: const NotificationHandler(child: SignUpOrEnterAsGuest()),
     );
   }
 }
 
-// ---------------------------------------------------------------
-//               🔥 Widget übernimmt إدارة الإشعارات
-// ---------------------------------------------------------------
 class NotificationHandler extends StatefulWidget {
   final Widget child;
 
@@ -91,20 +111,23 @@ class _NotificationHandlerState extends State<NotificationHandler> {
   @override
   void initState() {
     super.initState();
-    _setupNotifications();
+    _initFirebaseMessaging();
   }
 
-  Future<void> _setupNotifications() async {
+  Future<void> _initFirebaseMessaging() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // ⚠️ لطلب إذن iOS (لا يضر أندرويد)
     await messaging.requestPermission(alert: true, badge: true, sound: true);
 
-    // ---------------------------------------------------
-    // 🟩 إشعار يصل والتطبيق مفتوح (Foreground)
-    // ---------------------------------------------------
+    try {
+      String? token = await messaging.getToken();
+      debugPrint(" FCM Device Token: $token");
+    } catch (e) {
+      debugPrint(" Failed to get FCM token: $e");
+    }
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("📩 إشعار Foreground: ${message.notification?.title}");
+      debugPrint(" Foreground Notification");
 
       if (message.notification != null) {
         _showPopup(
@@ -114,35 +137,33 @@ class _NotificationHandlerState extends State<NotificationHandler> {
       }
     });
 
-    // ---------------------------------------------------
-    // 🟨 المستخدم يفتح التطبيق من الخلفية عبر الإشعار
-    // ---------------------------------------------------
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      debugPrint("📨 فتح التطبيق من Background عبر الإشعار");
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      debugPrint("📨 App opened from background notification");
 
       if (message.data.containsKey("complaint_id")) {
-        String id = message.data["complaint_id"];
-        // يمكنك إضافة تنقل لصفحة الشكوى
+        String complaintId = message.data["complaint_id"];
+        debugPrint("Complaint ID: $complaintId");
+        // TODO: Navigate to complaint details page
       }
     });
 
-    // ---------------------------------------------------
-    // 🟥 التطبيق كان مغلق تماماً (Terminated)
-    // ---------------------------------------------------
-    RemoteMessage? initialMsg = await FirebaseMessaging.instance
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
         .getInitialMessage();
-    if (initialMsg != null) {
-      debugPrint("🚀 التطبيق فتح من إشعار (Terminated)");
 
-      if (initialMsg.data.containsKey("complaint_id")) {
-        String id = initialMsg.data["complaint_id"];
-        // التنقل لصفحة الشكوى لو أردت
+    if (initialMessage != null) {
+      debugPrint(" App opened from terminated notification");
+
+      if (initialMessage.data.containsKey("complaint_id")) {
+        String complaintId = initialMessage.data["complaint_id"];
+        debugPrint("Complaint ID: $complaintId");
+        // TODO: Navigate to complaint details page
       }
     }
   }
 
-  // 🔔 صندوق Pop-up بسيط
   void _showPopup(String title, String body) {
+    if (navigatorKey.currentContext == null) return;
+
     showDialog(
       context: navigatorKey.currentContext!,
       builder: (_) => AlertDialog(
@@ -150,7 +171,7 @@ class _NotificationHandlerState extends State<NotificationHandler> {
         content: Text(body),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(navigatorKey.currentContext!),
+            onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
             child: const Text("إغلاق"),
           ),
         ],

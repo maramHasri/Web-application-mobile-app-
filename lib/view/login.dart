@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_internet_application/l10n/app_localizations.dart';
 import 'package:flutter_internet_application/service/login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_internet_application/view/complain.dart';
@@ -26,23 +27,70 @@ class _LoginPageState extends State<LoginPage> {
   final storage = const FlutterSecureStorage();
   final LoginService loginService = LoginService();
 
-  // الحصول على Device Token من Firebase
   Future<String> getDeviceToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     print("Obtained Device Token: $token");
     return token ?? "";
   }
 
+  bool containsArabicCharacters(String text) {
+    final arabicRegex = RegExp(r'[\u0600-\u06FF]');
+    return arabicRegex.hasMatch(text);
+  }
+
+  bool isPhoneNumber(String identifier) {
+    final phoneRegex = RegExp(r'^[0-9]+$');
+    return phoneRegex.hasMatch(identifier);
+  }
+
+  String? validateIdentifier(String? value) {
+    if (value == null || value.isEmpty) {
+      return "الرجاء إدخال رقم الهاتف أو البريد الإلكتروني";
+    }
+    final trimmedValue = value.trim();
+    if (containsArabicCharacters(trimmedValue)) {
+      return "يجب إدخال رقم الهاتف بالأرقام الإنجليزية فقط";
+    }
+    if (isPhoneNumber(trimmedValue)) {
+      if (!trimmedValue.startsWith("963")) {
+        return "يجب أن يبدأ رقم الهاتف بـ 963";
+      }
+    } else {
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
+      if (!emailRegex.hasMatch(trimmedValue)) {
+        return "أدخل رقم هاتف يبدأ بـ 963 أو بريد إلكتروني صحيح";
+      }
+    }
+    return null;
+  }
+
+  String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return "الرجاء إدخال كلمة المرور";
+    }
+    if (value.length < 8) {
+      return "كلمة المرور يجب أن تكون 8 أحرف على الأقل";
+    }
+    return null;
+  }
+
   Future<void> login() async {
+    final identifierError = validateIdentifier(identifierController.text);
+    final passwordError = validatePassword(passwordController.text);
+    if (identifierError != null || passwordError != null) {
+      setState(() {
+        errorMessage = identifierError ?? passwordError ?? "";
+        successMessage = "";
+      });
+      return;
+    }
     setState(() {
       isLoading = true;
       errorMessage = "";
       successMessage = "";
     });
-
     try {
       final deviceToken = await getDeviceToken();
-
       final result = await loginService.login(
         identifier: identifierController.text.trim(),
         password: passwordController.text.trim(),
@@ -56,18 +104,16 @@ class _LoginPageState extends State<LoginPage> {
         if (result["success"] == true) {
           successMessage = result["message"] ?? "تم تسجيل الدخول بنجاح 🎉";
 
-          // حفظ التوكن في التخزين الآمن
           String userToken = result["data"]["token"] ?? "";
           storage.write(key: "userToken", value: userToken);
 
-          // الانتقال مباشرة لواجهة تقديم الشكوى
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) {
                 var complaintStepOne = ComplaintStepOne(
                   data: {},
-                  userToken: '', // لا حاجة لتمرير التوكن بعد هذا التعديل
+                  userToken: '',
                 );
                 return complaintStepOne;
               },
@@ -100,9 +146,9 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.only(top: 70),
                 child: AppTextField(
                   labelText: "رقم الهاتف أو الإيميل",
-                  hintText: "أدخل رقم الهاتف أو البريد",
                   controller: identifierController,
                   myIcon: const Icon(Icons.person),
+                  validator: validateIdentifier,
                 ),
               ),
               const SizedBox(height: 15),
@@ -110,10 +156,10 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.only(top: 10),
                 child: AppTextField(
                   labelText: "كلمة المرور",
-                  hintText: "أدخل كلمة المرور",
                   controller: passwordController,
                   obscureText: obscurePassword,
                   myIcon: const Icon(Icons.lock),
+                  validator: validatePassword,
                   traillingIcon: IconButton(
                     icon: Icon(
                       obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -126,14 +172,25 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 25),
               isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : AppButton(text: "تسجيل الدخول", onTap: login),
+                  : AppButton(
+                      text: AppLocalizations.of(context).login,
+                      onTap: login,
+                    ),
+
               const SizedBox(height: 15),
               if (errorMessage.isNotEmpty)
-                Text(errorMessage, style: const TextStyle(color: Colors.red)),
+                Text(
+                  errorMessage,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               if (successMessage.isNotEmpty)
                 Text(
                   successMessage,
-                  style: const TextStyle(color: Colors.green),
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.greenAccent
+                        : Colors.green,
+                  ),
                 ),
             ],
           ),

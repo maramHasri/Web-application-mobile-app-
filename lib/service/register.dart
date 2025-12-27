@@ -5,15 +5,15 @@ import 'package:flutter_internet_application/service/tokenManage.dart';
 abstract class AuthService {
   Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.1.7:8000/api",
+      baseUrl: "http://192.168.1.4:8000/api",
       connectTimeout: Duration(seconds: 10),
       receiveTimeout: Duration(seconds: 10),
     ),
   );
 
-  Future<Map<String, dynamic>> register(User user); // تعديل
+  Future<Map<String, dynamic>> register(User user);
   Future<bool> login(User user);
-  Future<bool> verifyOtp(String identifier, String code); // دالة OTP
+  Future<bool> verifyOtp(String identifier, String code);
 }
 
 class AuthServiceImpl extends AuthService {
@@ -34,7 +34,7 @@ class AuthServiceImpl extends AuthService {
         "success": success,
         "message": res["message"]?.toString() ?? "",
         "errors": res["errors"] ?? {},
-        "identifier": user.identifier, // لأن السيرفر لا يعيدها
+        "identifier": user.identifier,
         "data": res["data"] ?? {},
       };
     } catch (e, s) {

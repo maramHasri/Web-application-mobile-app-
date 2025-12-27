@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/service/getComplain.dart';
+import 'package:flutter_internet_application/view/complain.dart';
+import 'package:flutter_internet_application/core/providers/app_providers.dart';
 
 class ComplaintsPage extends StatefulWidget {
-  const ComplaintsPage({super.key});
+  const ComplaintsPage({
+    super.key,
+    required this.data,
+    required this.userToken,
+  });
+  final Map<String, dynamic> data;
+  final String userToken;
 
   @override
   State<ComplaintsPage> createState() => _ComplaintsPageState();
@@ -21,6 +29,22 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ComplaintStepOne(
+                data: widget.data,
+                userToken: widget.userToken,
+              ),
+            ),
+          );
+        },
+      ),
+
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text(
@@ -28,10 +52,79 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
+        actions: [
+          Builder(
+            builder: (context) {
+              final appProviders = AppProviders.of(context);
+              if (appProviders == null) {
+                return const SizedBox.shrink();
+              }
+              final themeProvider = appProviders.themeProvider;
+              final languageProvider = appProviders.languageProvider;
+              final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+              final currentLanguage = languageProvider.locale.languageCode;
+              return PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                color: Theme.of(context).scaffoldBackgroundColor,
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'theme',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          isDarkMode ? 'light mood' : 'dark mood',
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'language',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.language),
+                        const SizedBox(width: 12),
+                        Text(
+                          currentLanguage == 'ar'
+                              ? 'Change to English'
+                              : 'التبديل إلى العربية',
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (String value) {
+                  if (value == 'theme') {
+                    themeProvider.toggleTheme();
+                  } else if (value == 'language') {
+                    languageProvider.toggleLanguage();
+                  }
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _complaintsFuture,
         builder: (context, snapshot) {
+          final appProviders = AppProviders.of(context);
+          final currentLanguage =
+              appProviders?.languageProvider.locale.languageCode ?? 'ar';
+          final textDirection = currentLanguage == 'en'
+              ? TextDirection.ltr
+              : TextDirection.rtl;
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
@@ -65,12 +158,10 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Directionality(
-                      textDirection:
-                          TextDirection.rtl, // محاذاة النصوص للجهة اليمنى
+                      textDirection: textDirection,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // الصف الأول: الحالة والتاريخ
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -85,9 +176,10 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Text(
-                                      'New',
+                                    Text(
+                                      complaint['status'] ?? '---',
                                       style: TextStyle(
+                                        color: Colors.black54,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -111,21 +203,18 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                           ),
                           const SizedBox(height: 10),
 
-                          // الوصف
                           Text(
                             'الوصف: ${complaint['description'] ?? '---'}',
                             style: const TextStyle(fontSize: 14),
                           ),
                           const SizedBox(height: 4),
 
-                          // الجهة
                           Text(
                             'الجهة: ${complaint['destination']?['name'] ?? '---'}',
                             style: const TextStyle(fontSize: 14),
                           ),
                           const SizedBox(height: 4),
 
-                          // نوع الشكوى
                           Text(
                             'نوع الشكوى: ${complaint['complaint_type']?['name'] ?? '---'}',
                             style: const TextStyle(fontSize: 14),

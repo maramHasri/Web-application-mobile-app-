@@ -9,7 +9,6 @@ class Complain {
   String address;
   String description;
 
-  // ملف واحد
   File? document;
 
   // أكثر من ملف

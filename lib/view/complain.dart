@@ -8,7 +8,6 @@ import 'package:flutter_internet_application/view/allComplains.dart';
 import 'package:gap/gap.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../core/resource/color.dart';
 import '../service/complainService.dart';
 
 class ComplaintStepOne extends StatefulWidget {
@@ -147,9 +146,8 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.blue,
         title: const Text(
           "تقديم شكوى - الخطوة الأولى",
           style: TextStyle(color: Colors.white),
@@ -164,7 +162,7 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
             Padding(
               padding: const EdgeInsets.only(top: 20),
               child: AppTextField(
-                hintText: "نوع الشكوى",
+                // hintText: "نوع الشكوى",
                 controller: complaintTypeController,
                 labelText: "نوع الشكوى",
                 myIcon: const Icon(Icons.list),
@@ -183,7 +181,7 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
             ),
             const SizedBox(height: 20),
             AppTextField(
-              hintText: "الجهة المسؤولة",
+              // hintText: "الجهة المسؤولة",
               controller: destinationController,
               labelText: "الجهة المسؤولة",
               myIcon: const Icon(Icons.location_city),
@@ -199,7 +197,7 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
             ),
             const SizedBox(height: 20),
             AppTextField(
-              hintText: "العنوان",
+              // hintText: "العنوان",
               controller: addressController,
               labelText: "العنوان",
               myIcon: const Icon(Icons.place),
@@ -238,7 +236,6 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
                 ],
               ),
             ),
-            // رفع زر "التالي" 25 بكسل عن الأسفل
             const SizedBox(height: 25),
             AppButton(text: "التالي", onTap: submitData),
           ],
@@ -247,8 +244,6 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
     );
   }
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class ComplaintStepTwo extends StatefulWidget {
   final Map data;
@@ -320,7 +315,9 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
     if (success) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ComplaintsPage()),
+        MaterialPageRoute(
+          builder: (context) => ComplaintsPage(data: {}, userToken: ''),
+        ),
       );
     }
 
@@ -330,10 +327,8 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.blue,
         title: const Text(
           "تقديم شكوى - الخطوة ٢",
           style: TextStyle(color: Colors.white),
@@ -345,33 +340,46 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("وصف المشكلة", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "وصف المشكلة",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
             Gap(6),
 
             TextField(
               controller: descCtrl,
               maxLines: 5,
+              style: TextStyle(
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    Colors.black,
+              ),
               decoration: InputDecoration(
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                    color: Color.fromRGBO(33, 150, 243, 1), // أزرق
+                    color: Colors.blue.withOpacity(0.5),
                     width: 1,
                   ),
                 ),
-
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                    color: Colors.blue, // عند التركيز
-                    width: 2,
-                  ),
+                  borderSide: BorderSide(color: Colors.blue, width: 1.5),
                 ),
               ),
             ),
             Gap(20),
 
-            Text("إرفاق صور", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "إرفاق صور",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
             Gap(6),
             ElevatedButton.icon(
               onPressed: pickImages,
@@ -388,7 +396,13 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
             if (images.isNotEmpty) Text("${images.length} صورة مختارة"),
             Gap(20),
 
-            Text("إرفاق وثائق", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "إرفاق وثائق",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
             Gap(6),
             ElevatedButton.icon(
               onPressed: pickDocuments,

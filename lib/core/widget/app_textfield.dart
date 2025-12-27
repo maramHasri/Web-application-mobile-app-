@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_internet_application/core/resource/color.dart';
 
 class AppTextField extends StatelessWidget {
   const AppTextField({
     Key? key,
-    required this.hintText,
+    // required this.hintText,
     this.labelText,
     this.controller,
     this.validator,
@@ -15,7 +14,7 @@ class AppTextField extends StatelessWidget {
     this.height = 70,
   }) : super(key: key);
 
-  final String hintText;
+  // final String hintText;
   final String? labelText;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -37,13 +36,18 @@ class AppTextField extends StatelessWidget {
           validator: validator,
           obscureText: obscureText,
           textAlign: TextAlign.right,
-          style: const TextStyle(color: Colors.black, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+            fontSize: 16,
+          ),
           decoration: InputDecoration(
-            hintText: hintText,
+            // hintText: hintText,
             labelText: labelText,
 
             filled: true,
-            fillColor: Colors.white.withOpacity(0.1),
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.white.withOpacity(0.1),
 
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 15,
@@ -51,7 +55,8 @@ class AppTextField extends StatelessWidget {
             ),
 
             labelStyle: TextStyle(
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
               fontSize: 16,
               fontWeight: FontWeight.w400,
             ),
@@ -61,15 +66,14 @@ class AppTextField extends StatelessWidget {
 
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+              borderSide: BorderSide(color: Colors.blue.withOpacity(0.5)),
             ),
 
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: BorderSide(color: Colors.blue, width: 1.5),
             ),
 
-            // ⭐ هنا أضفتهم — نفس الشكل فقط لون أحمر
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.red, width: 1.2),

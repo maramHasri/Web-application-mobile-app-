@@ -1,123 +1,4 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_internet_application/model/userModel.dart';
-// import 'package:flutter_internet_application/service/register.dart';
-// import 'package:flutter_internet_application/view/otp.dart';
-
-// class RegisterPage extends StatefulWidget {
-//   const RegisterPage({super.key});
-
-//   @override
-//   State<RegisterPage> createState() => _RegisterPageState();
-// }
-
-// class _RegisterPageState extends State<RegisterPage> {
-//   final TextEditingController nameController = TextEditingController();
-//   final TextEditingController identifierController = TextEditingController();
-//   final TextEditingController nationalIdController = TextEditingController();
-//   final TextEditingController passwordController = TextEditingController();
-
-//   bool isLoading = false;
-//   String errorMessage = "";
-//   String successMessage = "";
-
-//   AuthServiceImpl auth = AuthServiceImpl();
-
-//   Future<void> register() async {
-//     setState(() {
-//       isLoading = true;
-//       errorMessage = "";
-//       successMessage = "";
-//     });
-
-//     User user = User(
-//       name: nameController.text.trim(),
-//       identifier: identifierController.text.trim(),
-//       national_id: nationalIdController.text.trim(),
-//       password: passwordController.text.trim(),
-//       role_id: 3,
-//     );
-
-//     final result = await auth.register(user);
-
-//     setState(() {
-//       isLoading = false;
-
-//       if (result["success"] == true) {
-//         successMessage = "تم إنشاء الحساب بنجاح 🎉";
-
-//         // 🔥 الانتقال إلى صفحة OTP مباشرة
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (_) => OtpVerify(
-//               identifier: user.identifier, // ← تمرير الإيميل أو الرقم
-//             ),
-//           ),
-//         );
-//       } else {
-//         if (result["errors"] != null && result["errors"].isNotEmpty) {
-//           errorMessage = result["errors"].values.first[0].toString();
-//         } else {
-//           errorMessage = result["message"] ?? "حدث خطأ غير متوقع";
-//         }
-//       }
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Register")),
-//       body: Padding(
-//         padding: const EdgeInsets.all(20),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             TextField(
-//               controller: nameController,
-//               decoration: const InputDecoration(labelText: "Name"),
-//             ),
-//             TextField(
-//               controller: identifierController,
-//               decoration: const InputDecoration(labelText: "Email / Phone"),
-//             ),
-//             TextField(
-//               controller: nationalIdController,
-//               decoration: const InputDecoration(labelText: "National ID"),
-//             ),
-//             TextField(
-//               controller: passwordController,
-//               obscureText: true,
-//               decoration: const InputDecoration(labelText: "Password"),
-//             ),
-
-//             const SizedBox(height: 20),
-
-//             if (isLoading)
-//               const Center(child: CircularProgressIndicator())
-//             else
-//               ElevatedButton(
-//                 onPressed: register,
-//                 child: const Text("Create Account"),
-//               ),
-
-//             const SizedBox(height: 15),
-
-//             if (errorMessage.isNotEmpty)
-//               Text(errorMessage, style: const TextStyle(color: Colors.red)),
-
-//             if (successMessage.isNotEmpty)
-//               Text(successMessage, style: const TextStyle(color: Colors.green)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
 import 'package:flutter/material.dart';
-import 'package:flutter_internet_application/core/resource/color.dart';
 import 'package:flutter_internet_application/core/widget/app_button.dart';
 import 'package:flutter_internet_application/core/widget/app_textfield.dart';
 import 'package:flutter_internet_application/model/userModel.dart';
@@ -149,7 +30,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   AuthServiceImpl auth = AuthServiceImpl();
 
-  // ========================= REGISTER METHOD =========================
   Future<void> register() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -177,30 +57,24 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => OtpVerify(
-            identifier: user.identifier,
-          ),
+          builder: (_) => OtpVerify(identifier: user.identifier),
         ),
       );
     } else {
       if (result["errors"] != null && result["errors"].isNotEmpty) {
         errorMessage = result["errors"].values.first[0].toString();
       } else {
-        errorMessage = result["message"] ?? "حدث خطأ غير متوقع";
+        errorMessage = result["message"] ?? "حدث خطأ";
       }
     }
 
     setState(() {});
   }
 
-  // ===================================================================
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
         title: const Text("إنشاء حساب"),
@@ -214,10 +88,9 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 const SizedBox(height: 20),
 
-                // ------------------ Name ------------------
                 AppTextField(
                   labelText: "الاسم",
-                  hintText: "أدخل اسمك الكامل",
+                  // hintText: "أدخل اسمك الكامل",
                   controller: nameController,
                   myIcon: const Icon(Icons.person),
                   validator: (value) {
@@ -229,10 +102,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // ------------------ National ID ------------------
                 AppTextField(
                   labelText: "الرقم الوطني",
-                  hintText: "أدخل الرقم الوطني",
+                  // hintText: "أدخل الرقم الوطني",
                   controller: nationalIdController,
                   myIcon: const Icon(Icons.badge),
                   validator: (value) {
@@ -247,10 +119,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // ------------------ Identifier (Email / Phone) ------------------
                 AppTextField(
                   labelText: "البريد الإلكتروني أو الهاتف",
-                  hintText: "أدخل البريد أو الهاتف",
+                  // hintText: "أدخل البريد أو الهاتف",
                   controller: identifierController,
                   myIcon: const Icon(Icons.mail),
                   validator: (value) {
@@ -260,8 +131,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     if (value.startsWith("963")) return null;
 
-                    final emailRegex =
-                        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
+                    final emailRegex = RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$',
+                    );
 
                     if (!emailRegex.hasMatch(value)) {
                       return "أدخل رقم هاتف يبدأ بـ 963 أو بريد صحيح";
@@ -271,16 +143,16 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // ------------------ Password ------------------
                 AppTextField(
                   labelText: "كلمة المرور",
-                  hintText: "أدخل كلمة المرور",
+                  // hintText: "أدخل كلمة المرور",
                   controller: passwordController,
                   obscureText: obscurePassword,
                   myIcon: const Icon(Icons.lock),
                   traillingIcon: IconButton(
                     icon: Icon(
-                        obscurePassword ? Icons.visibility_off : Icons.visibility),
+                      obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    ),
                     onPressed: () =>
                         setState(() => obscurePassword = !obscurePassword),
                   ),
@@ -296,16 +168,16 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // ------------------ Confirm Password ------------------
                 AppTextField(
                   labelText: "تأكيد كلمة المرور",
-                  hintText: "أعد إدخال كلمة المرور",
+                  // hintText: "أعد إدخال كلمة المرور",
                   controller: confirmController,
                   obscureText: obscureConfirm,
                   myIcon: const Icon(Icons.lock),
                   traillingIcon: IconButton(
                     icon: Icon(
-                        obscureConfirm ? Icons.visibility_off : Icons.visibility),
+                      obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                    ),
                     onPressed: () =>
                         setState(() => obscureConfirm = !obscureConfirm),
                   ),
@@ -323,11 +195,21 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 25),
 
                 if (errorMessage.isNotEmpty)
-                  Text(errorMessage,
-                      style: const TextStyle(color: Colors.red)),
+                  Text(
+                    errorMessage,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 if (successMessage.isNotEmpty)
-                  Text(successMessage,
-                      style: const TextStyle(color: Colors.green)),
+                  Text(
+                    successMessage,
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.greenAccent
+                          : Colors.green,
+                    ),
+                  ),
 
                 const SizedBox(height: 15),
 
