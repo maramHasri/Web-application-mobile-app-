@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("تسجيل الدخول")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).login)),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(30),
@@ -145,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 70),
                 child: AppTextField(
-                  labelText: "رقم الهاتف أو الإيميل",
+                  labelText: AppLocalizations.of(context).mobileNumberOrEmail,
                   controller: identifierController,
                   myIcon: const Icon(Icons.person),
                   validator: validateIdentifier,
@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: AppTextField(
-                  labelText: "كلمة المرور",
+                  labelText: AppLocalizations.of(context).password,
                   controller: passwordController,
                   obscureText: obscurePassword,
                   myIcon: const Icon(Icons.lock),

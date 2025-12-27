@@ -1,5 +1,11 @@
 {
-  "appTitle": "My Application",
-  "login": "Login",
-  "logout": "Logout"
+  "Citizen service app": " Citizen service app",
+  "login": "login",
+  "create account": " create account ",
+  "User's complaints": "User's complaints",
+  "mobileNumberOrEmail":"Mobile number or email",
+  "password":"Password",
+  "submitComplaintStep1":"Submit a complaint - Step 1",
+  "submitComplaintStep2":"Submit a complaint - Step 2",
+  "logout": "logout"
 }

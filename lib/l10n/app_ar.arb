@@ -1,7 +1,11 @@
 {
-  "appTitle": "مركز خدمة المواطن",
+  "Citizen service app": " تطبيق خدمة المواطن",
   "login": "تسجيل الدخول",
   "create account": " إنشاء حساب ",
   "User's complaints": "شكاوي المستخدم",
+  "mobileNumberOrEmail":"رقم الهاتف أو الإيميل",
+  "password":"كلمة المرور",
+  "submitComplaintStep1":"تقديم شكوى - الخطوة الأولى",
+  "submitComplaintStep2":"تقديم شكوى - الخطوة الثانية",
   "logout": "تسجيل الخروج"
 }

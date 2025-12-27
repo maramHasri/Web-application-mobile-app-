@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/core/widget/app_button.dart';
+import 'package:flutter_internet_application/l10n/app_localizations.dart';
 
 import 'package:flutter_internet_application/view/login.dart';
 import 'package:flutter_internet_application/view/Auth/registerForm.dart';
@@ -27,7 +28,7 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 Text(
-                  "خدمة المواطن",
+                  AppLocalizations.of(context).appTitle,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
@@ -38,7 +39,7 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                 const SizedBox(height: 50),
 
                 AppButton(
-                  text: "إنشاء حساب",
+                  text: AppLocalizations.of(context).createAccount,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -52,7 +53,7 @@ class SignUpOrEnterAsGuest extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 AppButton(
-                  text: "تسجيل الدخول",
+                  text: AppLocalizations.of(context).login,
                   onTap: () {
                     Navigator.push(
                       context,

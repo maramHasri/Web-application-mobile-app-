@@ -7,6 +7,7 @@ import 'package:flutter_internet_application/core/widget/app_textfield.dart';
 import 'package:flutter_internet_application/view/allComplains.dart';
 import 'package:gap/gap.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_internet_application/l10n/app_localizations.dart';
 
 import '../service/complainService.dart';
 
@@ -147,12 +148,7 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text(
-          "تقديم شكوى - الخطوة الأولى",
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
+        title: Text(AppLocalizations.of(context).submitComplaintStep1),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 50),
@@ -161,46 +157,83 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 20),
-              child: AppTextField(
-                // hintText: "نوع الشكوى",
-                controller: complaintTypeController,
-                labelText: "نوع الشكوى",
-                myIcon: const Icon(Icons.list),
-                traillingIcon: PopupMenuButton<Map<String, dynamic>>(
-                  icon: const Icon(Icons.arrow_drop_down),
-                  onSelected: (value) {
-                    complaintTypeController.text = value['id'];
-                  },
-                  itemBuilder: (context) => complaintTypes
-                      .map(
-                        (e) => PopupMenuItem(value: e, child: Text(e['name'])),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            AppTextField(
-              // hintText: "الجهة المسؤولة",
-              controller: destinationController,
-              labelText: "الجهة المسؤولة",
-              myIcon: const Icon(Icons.location_city),
-              traillingIcon: PopupMenuButton<Map<String, dynamic>>(
-                icon: const Icon(Icons.arrow_drop_down),
-                onSelected: (value) {
-                  destinationController.text = value['id'];
+              child: Builder(
+                builder: (context) {
+                  final localizations = AppLocalizations.of(context);
+                  final isEnglish = localizations.locale.languageCode == 'en';
+                  return AppTextField(
+                    controller: complaintTypeController,
+                    labelText: isEnglish ? "Complaint Type" : "نوع الشكوى",
+                    myIcon: const Icon(Icons.list),
+                    traillingIcon: PopupMenuButton<Map<String, dynamic>>(
+                      icon: const Icon(Icons.arrow_drop_down),
+                      onSelected: (value) {
+                        complaintTypeController.text = value['id'];
+                      },
+                      itemBuilder: (context) {
+                        final localizations = AppLocalizations.of(context);
+                        return complaintTypes
+                            .map(
+                              (e) => PopupMenuItem(
+                                value: e,
+                                child: Text(
+                                  localizations.translateComplaintType(
+                                    e['name'],
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList();
+                      },
+                    ),
+                  );
                 },
-                itemBuilder: (context) => destinations
-                    .map((e) => PopupMenuItem(value: e, child: Text(e['name'])))
-                    .toList(),
               ),
             ),
             const SizedBox(height: 20),
-            AppTextField(
-              // hintText: "العنوان",
-              controller: addressController,
-              labelText: "العنوان",
-              myIcon: const Icon(Icons.place),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return AppTextField(
+                  controller: destinationController,
+                  labelText: isEnglish
+                      ? "Responsible Authority"
+                      : "الجهة المسؤولة",
+                  myIcon: const Icon(Icons.location_city),
+                  traillingIcon: PopupMenuButton<Map<String, dynamic>>(
+                    icon: const Icon(Icons.arrow_drop_down),
+                    onSelected: (value) {
+                      destinationController.text = value['id'];
+                    },
+                    itemBuilder: (context) {
+                      final localizations = AppLocalizations.of(context);
+                      return destinations
+                          .map(
+                            (e) => PopupMenuItem(
+                              value: e,
+                              child: Text(
+                                localizations.translateDestination(e['name']),
+                              ),
+                            ),
+                          )
+                          .toList();
+                    },
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return AppTextField(
+                  controller: addressController,
+                  labelText: isEnglish ? "Address" : "العنوان",
+                  myIcon: const Icon(Icons.place),
+                );
+              },
             ),
             const SizedBox(height: 10),
             Padding(
@@ -223,7 +256,18 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
                       }
                     },
                   ),
-                  const Text("تحديد الموقع تلقائيًا"),
+                  Builder(
+                    builder: (context) {
+                      final localizations = AppLocalizations.of(context);
+                      final isEnglish =
+                          localizations.locale.languageCode == 'en';
+                      return Text(
+                        isEnglish
+                            ? "Auto-detect location"
+                            : "تحديد الموقع تلقائيًا",
+                      );
+                    },
+                  ),
                   if (fetchingLocation)
                     const Padding(
                       padding: EdgeInsets.only(left: 10),
@@ -237,7 +281,16 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
               ),
             ),
             const SizedBox(height: 25),
-            AppButton(text: "التالي", onTap: submitData),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return AppButton(
+                  text: isEnglish ? "Next" : "التالي",
+                  onTap: submitData,
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -328,13 +381,9 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text(
-          "تقديم شكوى - الخطوة ٢",
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
+        title: Text(AppLocalizations.of(context).submitComplaintStep2),
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -373,72 +422,126 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
             ),
             Gap(20),
 
-            Text(
-              "إرفاق صور",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return Text(
+                  isEnglish ? "Attach Photos" : "إرفاق صور",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                );
+              },
             ),
             Gap(6),
-            ElevatedButton.icon(
-              onPressed: pickImages,
-              icon: Icon(Icons.image),
-              label: Text("اختيار صور"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return ElevatedButton.icon(
+                  onPressed: pickImages,
+                  icon: Icon(Icons.image),
+                  label: Text(isEnglish ? "Choose Photos" : "اختيار صور"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+              },
             ),
-            if (images.isNotEmpty) Text("${images.length} صورة مختارة"),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                if (images.isEmpty) return const SizedBox.shrink();
+                return Text(
+                  isEnglish
+                      ? "${images.length} photo(s) selected"
+                      : "${images.length} صورة مختارة",
+                );
+              },
+            ),
             Gap(20),
 
-            Text(
-              "إرفاق وثائق",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return Text(
+                  isEnglish ? "Attach Documents" : "إرفاق وثائق",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                );
+              },
             ),
             Gap(6),
-            ElevatedButton.icon(
-              onPressed: pickDocuments,
-              icon: Icon(Icons.attach_file),
-              label: Text("اختيار ملفات"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return ElevatedButton.icon(
+                  onPressed: pickDocuments,
+                  icon: Icon(Icons.attach_file),
+                  label: Text(isEnglish ? "Choose Files" : "اختيار ملفات"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+              },
             ),
-            if (documents.isNotEmpty) Text("${documents.length} ملف مختار"),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                if (documents.isEmpty) return const SizedBox.shrink();
+                return Text(
+                  isEnglish
+                      ? "${documents.length} file(s) selected"
+                      : "${documents.length} ملف مختار",
+                );
+              },
+            ),
             Gap(30),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: sending ? null : send,
-                child: sending
-                    ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : Text("إرسال الشكوى"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Builder(
+              builder: (context) {
+                final localizations = AppLocalizations.of(context);
+                final isEnglish = localizations.locale.languageCode == 'en';
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: sending ? null : send,
+                    child: sending
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(isEnglish ? "Send Complaint" : "إرسال الشكوى"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),

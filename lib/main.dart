@@ -172,7 +172,7 @@ class _NotificationHandlerState extends State<NotificationHandler> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
-            child: const Text("إغلاق"),
+            child: const Text("close"),
           ),
         ],
       ),

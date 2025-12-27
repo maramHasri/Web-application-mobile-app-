@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/service/getComplain.dart';
 import 'package:flutter_internet_application/view/complain.dart';
 import 'package:flutter_internet_application/core/providers/app_providers.dart';
+import 'package:flutter_internet_application/l10n/app_localizations.dart';
 
 class ComplaintsPage extends StatefulWidget {
   const ComplaintsPage({
@@ -47,10 +48,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
 
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: const Text(
-          "شكاوي المستخدم",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text(AppLocalizations.of(context).usersComplaints),
         centerTitle: true,
         actions: [
           Builder(
@@ -174,22 +172,33 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                                   color: Colors.blue.shade100,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      complaint['status'] ?? '---',
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Icon(
-                                      Icons.check,
-                                      size: 16,
-                                      color: Colors.blue.shade700,
-                                    ),
-                                  ],
+                                child: Builder(
+                                  builder: (context) {
+                                    final localizations = AppLocalizations.of(
+                                      context,
+                                    );
+                                    final status = complaint['status'] ?? '---';
+                                    final translatedStatus = status != '---'
+                                        ? localizations.translateStatus(status)
+                                        : status;
+                                    return Row(
+                                      children: [
+                                        Text(
+                                          translatedStatus,
+                                          style: TextStyle(
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.check,
+                                          size: 16,
+                                          color: Colors.blue.shade700,
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                               Text(
@@ -203,21 +212,61 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                           ),
                           const SizedBox(height: 10),
 
-                          Text(
-                            'الوصف: ${complaint['description'] ?? '---'}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          const SizedBox(height: 4),
+                          Builder(
+                            builder: (context) {
+                              final localizations = AppLocalizations.of(
+                                context,
+                              );
+                              final destinationName =
+                                  complaint['destination']?['name'] ?? '---';
+                              final complaintTypeName =
+                                  complaint['complaint_type']?['name'] ?? '---';
 
-                          Text(
-                            'الجهة: ${complaint['destination']?['name'] ?? '---'}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          const SizedBox(height: 4),
+                              final translatedDestination =
+                                  destinationName != '---'
+                                  ? localizations.translateDestination(
+                                      destinationName,
+                                    )
+                                  : destinationName;
+                              final translatedComplaintType =
+                                  complaintTypeName != '---'
+                                  ? localizations.translateComplaintType(
+                                      complaintTypeName,
+                                    )
+                                  : complaintTypeName;
 
-                          Text(
-                            'نوع الشكوى: ${complaint['complaint_type']?['name'] ?? '---'}',
-                            style: const TextStyle(fontSize: 14),
+                              final isEnglish =
+                                  localizations.locale.languageCode == 'en';
+                              final descriptionLabel = isEnglish
+                                  ? 'Description: '
+                                  : 'الوصف: ';
+                              final destinationLabel = isEnglish
+                                  ? 'Destination: '
+                                  : 'الجهة: ';
+                              final complaintTypeLabel = isEnglish
+                                  ? 'Complaint Type: '
+                                  : 'نوع الشكوى: ';
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$descriptionLabel${complaint['description'] ?? '---'}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '$destinationLabel$translatedDestination',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '$complaintTypeLabel$translatedComplaintType',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
