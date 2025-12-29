@@ -7,5 +7,11 @@
   "password":"Password",
   "submitComplaintStep1":"Submit a complaint - Step 1",
   "submitComplaintStep2":"Submit a complaint - Step 2",
-  "logout": "logout"
+  "logout": "logout",
+  "newStatus":"New",
+  "inProgress":"In Progress",
+  "rejected":"Rejected",
+  "completed":"Completed",
+  "problemDescription":"Problem Description"
+
 }

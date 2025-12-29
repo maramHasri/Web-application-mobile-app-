@@ -23,6 +23,11 @@ class AppLocalizations {
       'submitComplaintStep1': 'Submit a complaint - Step 1',
       'submitComplaintStep2': 'Submit a complaint - Step 2',
       'appTitle': 'Citizen service app',
+      'newStatus': 'New',
+      'inProgress': 'In Progress',
+      'rejected': 'Rejected',
+      'completed': 'Completed',
+      'problemDescription': 'Problem Description',
     },
     'ar': {
       'login': 'تسجيل الدخول',
@@ -34,6 +39,11 @@ class AppLocalizations {
       'submitComplaintStep1': 'تقديم شكوى - الخطوة الأولى',
       'submitComplaintStep2': 'تقديم شكوى - الخطوة الثانية',
       'appTitle': 'تطبيق خدمة المواطن',
+      'newStatus': 'جديدة',
+      'inProgress': 'قيد المعالجة',
+      'rejected': 'مرفوضة',
+      'completed': 'مكتملة',
+      'problemDescription': 'وصف المشكلة',
     },
   };
 
@@ -58,6 +68,18 @@ class AppLocalizations {
   String get submitComplaintStep2 =>
       _localizedValues[locale.languageCode]!['submitComplaintStep2']!;
   String get appTitle => _localizedValues[locale.languageCode]!['appTitle']!;
+
+  String get newStatus => _localizedValues[locale.languageCode]!['newStatus']!;
+
+  String get inProgress =>
+      _localizedValues[locale.languageCode]!['inProgress']!;
+
+  String get rejected => _localizedValues[locale.languageCode]!['rejected']!;
+
+  String get completed => _localizedValues[locale.languageCode]!['completed']!;
+
+  String get problemDescription =>
+      _localizedValues[locale.languageCode]!['problemDescription']!;
 
   String translateComplaintType(String englishName) {
     return BackendDataTranslator.translateComplaintType(englishName, locale);

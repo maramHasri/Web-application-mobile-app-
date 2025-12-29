@@ -7,5 +7,10 @@
   "password":"كلمة المرور",
   "submitComplaintStep1":"تقديم شكوى - الخطوة الأولى",
   "submitComplaintStep2":"تقديم شكوى - الخطوة الثانية",
-  "logout": "تسجيل الخروج"
+  "logout": "تسجيل الخروج",
+  "newStatus":"جديدة",
+  "inProgress":"قيد المعالجة",
+  "rejected":"مرفوضة",
+  "completed":"مكتملة",
+  "problemDescription":"وصف المشكلة"
 }

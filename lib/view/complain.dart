@@ -390,7 +390,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "وصف المشكلة",
+              AppLocalizations.of(context).problemDescription,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).textTheme.bodyLarge?.color,

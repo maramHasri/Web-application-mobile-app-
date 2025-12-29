@@ -16,9 +16,14 @@ class BackendDataTranslator {
     'status': {
       'pending': 'قيد الانتظار',
       'in_progress': 'قيد المعالجة',
+      'in progress': 'قيد المعالجة',
       'resolved': 'تم الحل',
       'closed': 'مغلق',
-      'rejected': 'مرفوض',
+      'rejected': 'مرفوضة',
+      'completed': 'مكتملة',
+      'new': 'جديدة',
+      'newstatus': 'جديدة',
+      'new status': 'جديدة',
     },
   };
 
@@ -41,7 +46,16 @@ class BackendDataTranslator {
       return englishStatus;
     }
     final normalizedStatus = englishStatus.toLowerCase().trim();
-    return _translations['status']?[normalizedStatus] ?? englishStatus;
+    final statusMap = _translations['status'];
+    if (statusMap == null) {
+      return englishStatus;
+    }
+    final translated = statusMap[normalizedStatus];
+    if (translated != null) {
+      return translated;
+    }
+    final normalizedWithUnderscore = normalizedStatus.replaceAll(' ', '_');
+    return statusMap[normalizedWithUnderscore] ?? englishStatus;
   }
 
   static String translateBackendValue(
