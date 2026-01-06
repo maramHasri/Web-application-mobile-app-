@@ -10,9 +10,9 @@ class LoginService {
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: "http://192.168.1.4:8000/api",
-              connectTimeout: Duration(seconds: 10),
-              receiveTimeout: Duration(seconds: 10),
+              baseUrl: "http://192.168.1.104:8000/api",
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
             ),
           );
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/service/getComplain.dart';
+import 'package:flutter_internet_application/service/notification_debug_service.dart';
 import 'package:flutter_internet_application/view/complain.dart';
 import 'package:flutter_internet_application/core/providers/app_providers.dart';
 import 'package:flutter_internet_application/l10n/app_localizations.dart';
@@ -25,6 +26,59 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   void initState() {
     super.initState();
     _complaintsFuture = _service.getUserComplaints();
+  }
+
+  Future<void> _showDebugDialog(BuildContext context) async {
+    await NotificationDebugService.printDebugInfo();
+    final String? fcmToken = await NotificationDebugService.getCurrentFcmToken();
+    final bool hasPermission = await NotificationDebugService.checkNotificationPermissions();
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Notification Debug Info'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('FCM Token: ${fcmToken ?? "NULL"}'),
+              const SizedBox(height: 8),
+              Text('Token Length: ${fcmToken?.length ?? 0}'),
+              const SizedBox(height: 8),
+              Text('Has Permission: ${hasPermission ? "YES" : "NO"}'),
+              const SizedBox(height: 16),
+              const Text(
+                'Check console logs for full debug info.',
+                style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await NotificationDebugService.testLocalNotification();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Test notification sent! Check your notifications.'),
+                  ),
+                );
+              }
+            },
+            child: const Text('Test Notification'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -100,12 +154,29 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                       ],
                     ),
                   ),
+                  PopupMenuItem<String>(
+                    value: 'debug',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.bug_report),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Debug Notifications',
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
                 onSelected: (String value) {
                   if (value == 'theme') {
                     themeProvider.toggleTheme();
                   } else if (value == 'language') {
                     languageProvider.toggleLanguage();
+                  } else if (value == 'debug') {
+                    _showDebugDialog(context);
                   }
                 },
               );

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/core/widget/app_button.dart';
 import 'package:flutter_internet_application/core/widget/app_textfield.dart';
@@ -34,6 +36,24 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
   bool fetchingLocation = false;
   double? latitude;
   double? longitude;
+
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    requestPermission();
+  }
+
+  void requestPermission() async {
+    NotificationSettings settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    print('🔐 Permission: ${settings.authorizationStatus}');
+  }
 
   final List<Map<String, dynamic>> complaintTypes = [
     {"id": "1", "name": "Service Delay"},
@@ -85,20 +105,46 @@ class _ComplaintStepOneState extends State<ComplaintStepOne> {
     }
 
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      Position position =
+          await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+            timeLimit: const Duration(seconds: 15),
+          ).timeout(
+            const Duration(seconds: 20),
+            onTimeout: () {
+              throw TimeoutException(
+                'Location request timed out',
+                const Duration(seconds: 20),
+              );
+            },
+          );
       latitude = position.latitude;
       longitude = position.longitude;
       widget.data['lat'] = latitude.toString();
       widget.data['lng'] = longitude.toString();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("تم الحصول على الموقع بنجاح"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("فشل الحصول على الموقع")));
+      if (mounted) {
+        String errorMessage = "فشل الحصول على الموقع";
+        if (e is TimeoutException) {
+          errorMessage = "انتهت مهلة الحصول على الموقع. يرجى المحاولة مرة أخرى";
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => fetchingLocation = false);
+      }
     }
-
-    setState(() => fetchingLocation = false);
   }
 
   void submitData() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/l10n/app_localizations.dart';
 import 'package:flutter_internet_application/service/login.dart';
+import 'package:flutter_internet_application/service/fcm_token_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_internet_application/view/complain.dart';
 import 'package:flutter_internet_application/core/widget/app_textfield.dart';
@@ -26,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
 
   final storage = const FlutterSecureStorage();
   final LoginService loginService = LoginService();
+  final FcmTokenService fcmTokenService = FcmTokenService();
 
   Future<String> getDeviceToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
@@ -103,26 +105,36 @@ class _LoginPageState extends State<LoginPage> {
         isLoading = false;
         if (result["success"] == true) {
           successMessage = result["message"] ?? "تم تسجيل الدخول بنجاح 🎉";
-
-          String userToken = result["data"]["token"] ?? "";
-          storage.write(key: "userToken", value: userToken);
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) {
-                var complaintStepOne = ComplaintStepOne(
-                  data: {},
-                  userToken: '',
-                );
-                return complaintStepOne;
-              },
-            ),
-          );
         } else {
           errorMessage = result["message"] ?? "حدث خطأ غير متوقع";
         }
       });
+
+      if (result["success"] == true) {
+        String userToken = result["data"]["token"] ?? "";
+        await storage.write(key: "userToken", value: userToken);
+
+        final bool tokenSent = await fcmTokenService.sendTokenToBackend(
+          userToken,
+        );
+        if (tokenSent) {
+          debugPrint("✅ FCM token successfully sent to backend after login");
+        } else {
+          debugPrint("⚠️ Failed to send FCM token to backend after login");
+        }
+        fcmTokenService.setupTokenRefreshListener(userToken);
+
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) {
+              var complaintStepOne = ComplaintStepOne(data: {}, userToken: '');
+              return complaintStepOne;
+            },
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         isLoading = false;
