@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter_internet_application/core/constants/api_constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class sendComplainService {
   static final storage = FlutterSecureStorage();
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.1.104:8000",
+      baseUrl: ApiConstants.baseUrl,
       headers: {"accept": "application/json"},
     ),
   );
@@ -38,7 +39,7 @@ class sendComplainService {
       final token = await storage.read(key: "userToken");
 
       final res = await dio.post(
-        "/api/user/complaints",
+        "/user/complaints",
         data: formData,
         options: Options(
           contentType: "multipart/form-data",

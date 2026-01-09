@@ -90,7 +90,7 @@ class _OtpVerifyState extends State<OtpVerify> {
                         ),
                       ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: const Color(0xFF1F4E79),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

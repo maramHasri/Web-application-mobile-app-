@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_internet_application/l10n/app_localizations.dart';
-import 'package:flutter_internet_application/service/fcm_token_service.dart';
 import 'package:flutter_internet_application/view/Auth/signUP.dart';
 import 'package:flutter_internet_application/core/providers/theme_provider.dart';
 import 'package:flutter_internet_application/core/providers/language_provider.dart';
@@ -22,16 +22,66 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        debugPrint("⚠️ Firebase initialization timeout");
+        throw TimeoutException("Firebase init timeout");
+      },
+    );
+    debugPrint("✅ Firebase initialized");
+  } catch (e) {
+    debugPrint("❌ Firebase initialization error: $e");
+  }
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  try {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint("❌ Background message handler error: $e");
+  }
 
-  await NotificationService.initialize();
-  await NotificationService.requestPermissions();
-  await NotificationService.setupMessageHandlers();
-  await FcmTokenService().sendTokenToBackend(
-    await FirebaseMessaging.instance.getToken(),
-  );
+  // Initialize notifications in background (non-blocking)
+  NotificationService.initialize()
+      .then((_) {
+        debugPrint("✅ NotificationService initialized");
+        NotificationService.requestPermissions()
+            .then((_) {
+              debugPrint("✅ Permissions requested");
+            })
+            .catchError((e) {
+              debugPrint("❌ Permission request error: $e");
+            });
+        NotificationService.setupMessageHandlers()
+            .then((_) {
+              debugPrint("✅ Message handlers setup");
+            })
+            .catchError((e) {
+              debugPrint("❌ Message handlers setup error: $e");
+            });
+
+        // Get and print FCM token for debugging
+        FirebaseMessaging.instance
+            .getToken()
+            .then((token) {
+              if (token != null) {
+                debugPrint("📱 FCM Token: $token");
+                debugPrint("📱 FCM Token Length: ${token.length}");
+              } else {
+                debugPrint("⚠️ FCM Token is NULL");
+              }
+            })
+            .catchError((e) {
+              debugPrint("❌ Error getting FCM token: $e");
+            });
+      })
+      .catchError((e) {
+        debugPrint("❌ NotificationService initialization error: $e");
+      });
+
+  // FCM token will be sent to backend after user login (see login.dart)
   runApp(const MyApp());
 }
 
@@ -83,12 +133,18 @@ class _MyAppState extends State<MyApp> {
       ],
       theme: ThemeData(
         brightness: Brightness.light,
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1F4E79),
+          brightness: Brightness.light,
+        ),
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1F4E79),
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       themeMode: _themeProvider.themeMode,

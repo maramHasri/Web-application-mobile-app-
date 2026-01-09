@@ -112,17 +112,30 @@ class _LoginPageState extends State<LoginPage> {
 
       if (result["success"] == true) {
         String userToken = result["data"]["token"] ?? "";
+        if (userToken.isEmpty) {
+          setState(() {
+            isLoading = false;
+            errorMessage = "فشل الحصول على رمز المصادقة";
+          });
+          return;
+        }
+        
         await storage.write(key: "userToken", value: userToken);
+        debugPrint("✅ User token saved to secure storage");
 
+        // Send FCM token to backend after successful login
         final bool tokenSent = await fcmTokenService.sendTokenToBackend(
           userToken,
         );
         if (tokenSent) {
           debugPrint("✅ FCM token successfully sent to backend after login");
         } else {
-          debugPrint("⚠️ Failed to send FCM token to backend after login");
+          debugPrint("⚠️ Failed to send FCM token to backend after login - will retry on token refresh");
         }
+        
+        // Setup token refresh listener to automatically update backend when token changes
         fcmTokenService.setupTokenRefreshListener(userToken);
+        debugPrint("✅ FCM token refresh listener setup complete");
 
         if (!mounted) return;
         Navigator.pushReplacement(

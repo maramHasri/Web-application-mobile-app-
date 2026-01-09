@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_internet_application/core/constants/api_constants.dart';
 import 'package:flutter_internet_application/service/tokenManage.dart';
 
 class LoginService {
@@ -10,9 +11,9 @@ class LoginService {
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: "http://192.168.1.104:8000/api",
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 10),
+              baseUrl: ApiConstants.baseUrl,
+              connectTimeout: const Duration(seconds: 60),
+              receiveTimeout: const Duration(seconds: 60),
             ),
           );
 

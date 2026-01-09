@@ -25,13 +25,21 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   @override
   void initState() {
     super.initState();
-    _complaintsFuture = _service.getUserComplaints();
+    _loadComplaints();
+  }
+
+  void _loadComplaints() {
+    setState(() {
+      _complaintsFuture = _service.getUserComplaints();
+    });
   }
 
   Future<void> _showDebugDialog(BuildContext context) async {
     await NotificationDebugService.printDebugInfo();
-    final String? fcmToken = await NotificationDebugService.getCurrentFcmToken();
-    final bool hasPermission = await NotificationDebugService.checkNotificationPermissions();
+    final String? fcmToken =
+        await NotificationDebugService.getCurrentFcmToken();
+    final bool hasPermission =
+        await NotificationDebugService.checkNotificationPermissions();
 
     if (!context.mounted) return;
 
@@ -65,7 +73,9 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Test notification sent! Check your notifications.'),
+                    content: Text(
+                      'Test notification sent! Check your notifications.',
+                    ),
                   ),
                 );
               }
@@ -85,7 +95,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF1F4E79),
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(
@@ -101,7 +111,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
       ),
 
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF1F4E79),
         title: Text(AppLocalizations.of(context).usersComplaints),
         centerTitle: true,
         actions: [
@@ -265,7 +275,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                                         Icon(
                                           Icons.check,
                                           size: 16,
-                                          color: Colors.blue.shade700,
+                                          color: const Color(0xFF1F4E79),
                                         ),
                                       ],
                                     );

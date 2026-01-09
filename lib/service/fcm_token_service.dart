@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_internet_application/core/constants/api_constants.dart';
 
 class FcmTokenService {
   final Dio dio;
@@ -18,9 +19,9 @@ class FcmTokenService {
            dio ??
            Dio(
              BaseOptions(
-               baseUrl: "http://192.168.1.104:8000/api",
-               connectTimeout: const Duration(seconds: 10),
-               receiveTimeout: const Duration(seconds: 10),
+               baseUrl: ApiConstants.baseUrl,
+               connectTimeout: ApiConstants.connectTimeout,
+               receiveTimeout: ApiConstants.receiveTimeout,
              ),
            ),
        storage = storage ?? const FlutterSecureStorage(),
@@ -51,16 +52,22 @@ class FcmTokenService {
 
     try {
       String? fcmToken = await getFcmToken();
-      if (fcmToken == null) {
-        debugPrint("❌ Cannot send FCM token to backend: FCM token is null");
+      if (fcmToken == null || fcmToken.isEmpty) {
+        debugPrint(
+          "❌ Cannot send FCM token to backend: FCM token is null or empty",
+        );
         return false;
       }
 
       final String? lastSentToken = await storage.read(key: _fcmTokenSentKey);
       if (lastSentToken == fcmToken) {
-        debugPrint("ℹ️ FCM token already sent to backend");
+        debugPrint("ℹ️ FCM token already sent to backend (token unchanged)");
         return true;
       }
+
+      debugPrint(
+        "📤 Sending FCM token to backend: ${fcmToken.substring(0, 20)}...",
+      );
 
       final response = await dio.post(
         "/user/fcm-token",
@@ -69,14 +76,19 @@ class FcmTokenService {
           headers: {
             "Authorization": "Bearer $authToken",
             "accept": "application/json",
+            "Content-Type": "application/json",
           },
           validateStatus: (_) => true,
         ),
       );
 
+      debugPrint(
+        "📥 Backend response: ${response.statusCode} - ${response.data}",
+      );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         await storage.write(key: _fcmTokenSentKey, value: fcmToken);
-        debugPrint("✅ FCM token sent to backend successfully");
+        debugPrint("✅ FCM token sent to backend successfully and stored");
         return true;
       } else {
         debugPrint(
@@ -84,8 +96,9 @@ class FcmTokenService {
         );
         return false;
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint("❌ Error sending FCM token to backend: $e");
+      debugPrint("Stack trace: $stackTrace");
       return false;
     }
   }

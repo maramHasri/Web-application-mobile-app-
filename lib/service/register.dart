@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_internet_application/core/constants/api_constants.dart';
 import 'package:flutter_internet_application/model/userModel.dart';
 import 'package:flutter_internet_application/service/tokenManage.dart';
 
 abstract class AuthService {
   Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.1.104:8000/api",
+      baseUrl: ApiConstants.baseUrl,
       connectTimeout: Duration(seconds: 10),
       receiveTimeout: Duration(seconds: 10),
     ),
