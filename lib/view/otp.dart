@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_internet_application/service/register.dart';
-import 'package:flutter_internet_application/view/complain.dart';
 import 'package:flutter_internet_application/view/login.dart';
 
 class OtpVerify extends StatefulWidget {

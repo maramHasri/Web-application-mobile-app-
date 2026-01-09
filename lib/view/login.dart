@@ -119,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
           });
           return;
         }
-        
+
         await storage.write(key: "userToken", value: userToken);
         debugPrint("✅ User token saved to secure storage");
 
@@ -130,9 +130,11 @@ class _LoginPageState extends State<LoginPage> {
         if (tokenSent) {
           debugPrint("✅ FCM token successfully sent to backend after login");
         } else {
-          debugPrint("⚠️ Failed to send FCM token to backend after login - will retry on token refresh");
+          debugPrint(
+            "⚠️ Failed to send FCM token to backend after login - will retry on token refresh",
+          );
         }
-        
+
         // Setup token refresh listener to automatically update backend when token changes
         fcmTokenService.setupTokenRefreshListener(userToken);
         debugPrint("✅ FCM token refresh listener setup complete");

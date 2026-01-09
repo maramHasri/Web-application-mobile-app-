@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_internet_application/core/constants/api_constants.dart';
 import 'package:flutter_internet_application/service/tokenManage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginService {
   final Dio dio;
@@ -91,6 +93,50 @@ class LoginService {
       print("LOGIN ERROR: $e");
       print("STACK: $s");
       return {"success": false, "message": "Unexpected error"};
+    }
+  }
+
+  Future<bool> logout() async {
+    try {
+      final String? userToken = await TokenStorage.getToken();
+
+      if (userToken == null || userToken.isEmpty) {
+        debugPrint("⚠️ No user token found for logout");
+        // Clear storage anyway
+        await TokenStorage.clearToken();
+        const storage = FlutterSecureStorage();
+        await storage.delete(key: 'userToken');
+        return false;
+      }
+
+      final response = await dio.post(
+        "/auth/logout",
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $userToken',
+            'Accept': 'application/json',
+          },
+          validateStatus: (_) => true,
+        ),
+      );
+
+      debugPrint("Logout response status: ${response.statusCode}");
+      debugPrint("Logout response body: ${response.data}");
+
+      // Clear token regardless of response status
+      await TokenStorage.clearToken();
+      const storage = FlutterSecureStorage();
+      await storage.delete(key: 'userToken');
+      debugPrint("✅ User token cleared from storage");
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      debugPrint("❌ Logout error: $e");
+      // Clear token even if API call fails
+      await TokenStorage.clearToken();
+      const storage = FlutterSecureStorage();
+      await storage.delete(key: 'userToken');
+      return false;
     }
   }
 }

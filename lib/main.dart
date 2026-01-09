@@ -133,19 +133,119 @@ class _MyAppState extends State<MyApp> {
       ],
       theme: ThemeData(
         brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1F4E79),
-          brightness: Brightness.light,
+        colorScheme: const ColorScheme.light(
+          // Primary colors
+          primary: Color(0xFF1F4E79),
+          onPrimary: Colors.white,
+          primaryContainer: Color(0xFF2E5F8F),
+          onPrimaryContainer: Colors.white,
+
+          // Secondary colors
+          secondary: Color(0xFF4A90E2),
+          onSecondary: Colors.white,
+          secondaryContainer: Color(0xFF6BA3E8),
+          onSecondaryContainer: Colors.white,
+
+          // Tertiary colors
+          tertiary: Color(0xFF7B9EC8),
+          onTertiary: Colors.white,
+
+          // Error colors
+          error: Color(0xFFD32F2F),
+          onError: Colors.white,
+          errorContainer: Color(0xFFFFCDD2),
+          onErrorContainer: Color(0xFFB71C1C),
+
+          // Background colors
+          background: Color(0xFFF5F5F5),
+          onBackground: Color(0xFF1A1A1A),
+          surface: Colors.white,
+          onSurface: Color(0xFF1A1A1A),
+
+          // Surface variant (for cards, etc.)
+          surfaceVariant: Color(0xFFE8E8E8),
+          onSurfaceVariant: Color(0xFF424242),
+
+          // Outline colors
+          outline: Color(0xFFBDBDBD),
+          outlineVariant: Color(0xFFE0E0E0),
+
+          // Shadow
+          shadow: Color(0xFF000000),
+          scrim: Color(0xFF000000),
+
+          // Inverse colors
+          inverseSurface: Color(0xFF1A1A1A),
+          onInverseSurface: Colors.white,
+          inversePrimary: Color(0xFF6BA3E8),
         ),
         useMaterial3: true,
+        // Card theme customization
+        cardTheme: const CardThemeData(
+          color: Colors.white,
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1F4E79),
-          brightness: Brightness.dark,
+        colorScheme: const ColorScheme.dark(
+          // Primary colors
+          primary: Color(0xFF6BA3E8),
+          onPrimary: Color(0xFF0A1F3A),
+          primaryContainer: Color(0xFF2E5F8F),
+          onPrimaryContainer: Color(0xFFE3F2FD),
+
+          // Secondary colors
+          secondary: Color(0xFF90C5F7),
+          onSecondary: Color(0xFF0A1F3A),
+          secondaryContainer: Color(0xFF4A90E2),
+          onSecondaryContainer: Color(0xFFE3F2FD),
+
+          // Tertiary colors
+          tertiary: Color(0xFF9DB5D1),
+          onTertiary: Color(0xFF0A1F3A),
+
+          // Error colors
+          error: Color(0xFFEF5350),
+          onError: Color(0xFF1A0000),
+          errorContainer: Color(0xFFB71C1C),
+          onErrorContainer: Color(0xFFFFCDD2),
+
+          // Background colors
+          background: Color(0xFF121212),
+          onBackground: Color(0xFFE0E0E0),
+          surface: Color(0xFF1E1E1E),
+          onSurface: Color(0xFFE0E0E0),
+
+          // Surface variant (for cards, etc.) - darker for dark mode
+          surfaceVariant: Color(0xFF2C2C2C),
+          onSurfaceVariant: Color(0xFFBDBDBD),
+
+          // Outline colors
+          outline: Color(0xFF616161),
+          outlineVariant: Color(0xFF424242),
+
+          // Shadow
+          shadow: Color(0xFF000000),
+          scrim: Color(0xFF000000),
+
+          // Inverse colors
+          inverseSurface: Color(0xFFE0E0E0),
+          onInverseSurface: Color(0xFF1A1A1A),
+          inversePrimary: Color(0xFF1F4E79),
         ),
         useMaterial3: true,
+        // Card theme customization for dark mode
+        cardTheme: const CardThemeData(
+          color: Color(0xFF1E1E1E),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+        ),
       ),
       themeMode: _themeProvider.themeMode,
       navigatorKey: navigatorKey,
