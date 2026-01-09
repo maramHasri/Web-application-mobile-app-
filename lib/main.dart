@@ -135,9 +135,9 @@ class _MyAppState extends State<MyApp> {
         brightness: Brightness.light,
         colorScheme: const ColorScheme.light(
           // Primary colors
-          primary: Color(0xFF1F4E79),
+          primary: Color.fromARGB(255, 40, 100, 156),
           onPrimary: Colors.white,
-          primaryContainer: Color(0xFF2E5F8F),
+          primaryContainer: Color.fromARGB(255, 40, 100, 156),
           onPrimaryContainer: Colors.white,
 
           // Secondary colors
@@ -195,7 +195,7 @@ class _MyAppState extends State<MyApp> {
           // Primary colors
           primary: Color(0xFF6BA3E8),
           onPrimary: Color(0xFF0A1F3A),
-          primaryContainer: Color(0xFF2E5F8F),
+          primaryContainer: Color.fromARGB(255, 40, 100, 156),
           onPrimaryContainer: Color(0xFFE3F2FD),
 
           // Secondary colors
@@ -235,7 +235,7 @@ class _MyAppState extends State<MyApp> {
           // Inverse colors
           inverseSurface: Color(0xFFE0E0E0),
           onInverseSurface: Color(0xFF1A1A1A),
-          inversePrimary: Color(0xFF1F4E79),
+          inversePrimary: Color.fromARGB(255, 40, 100, 156),
         ),
         useMaterial3: true,
         // Card theme customization for dark mode

@@ -6,12 +6,12 @@ class AppColors {
   static const Color white = Colors.white;
   static const Color black = Colors.black87;
 
-  static const Color primary = const Color(0xFF1F4E79);
+  static const Color primary = Color.fromARGB(255, 40, 100, 156);
 
   static const Color secondary = Colors.lightBlue;
   static const Color accent = Colors.orangeAccent;
 
-  static const Color textPrimary = Colors.black87;
+  static const Color textPrimary = Color.fromARGB(221, 236, 236, 236);
   static const Color textSecondary = Colors.grey;
 
   static const Color error = Colors.red;

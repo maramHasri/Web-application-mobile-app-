@@ -28,6 +28,8 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
   String? _highlightComplaintId;
   String? _highlightExtraInfoId;
   bool _isLoggingOut = false;
+  // Cache for extra_info keys: Map<complaintId_infoId, key>
+  final Map<String, String> _extraInfoKeysCache = {};
 
   @override
   void initState() {
@@ -46,15 +48,72 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
 
   void _loadComplaints() {
     setState(() {
-      _complaintsFuture = _service.getUserComplaints();
+      _complaintsFuture = _service.getUserComplaints().then((complaints) {
+        // Fetch missing keys for pending extra_info requests
+        _fetchMissingExtraInfoKeys(complaints);
+        return complaints;
+      });
     });
   }
 
   Future<void> _refreshComplaints() async {
     setState(() {
-      _complaintsFuture = _service.getUserComplaints();
+      _extraInfoKeysCache.clear(); // Clear cache on refresh
+      _complaintsFuture = _service.getUserComplaints().then((complaints) {
+        // Fetch missing keys for pending extra_info requests
+        _fetchMissingExtraInfoKeys(complaints);
+        return complaints;
+      });
     });
     await _complaintsFuture;
+  }
+
+  Future<void> _fetchMissingExtraInfoKeys(
+    List<Map<String, dynamic>> complaints,
+  ) async {
+    for (final complaint in complaints) {
+      final List extraInfoList =
+          complaint['extraInfo'] ?? complaint['extra_info'] ?? [];
+      final String complaintId = complaint['id'].toString();
+
+      for (final info in extraInfoList) {
+        final String infoId = info['id'].toString();
+        final String cacheKey = '${complaintId}_$infoId';
+
+        // Check if key is missing and not in cache
+        if ((info['key'] == null || info['key'].toString().isEmpty) &&
+            !_extraInfoKeysCache.containsKey(cacheKey)) {
+          // Fetch the extra_info details
+          try {
+            final details = await _service.getExtraInfoDetails(
+              complaintId: complaintId,
+              infoId: infoId,
+            );
+
+            if (details != null) {
+              // Get question text from either 'key' or 'value' field
+              final String? question =
+                  details['key']?.toString() ?? details['value']?.toString();
+              if (question != null && question.isNotEmpty) {
+                setState(() {
+                  _extraInfoKeysCache[cacheKey] = question;
+                });
+                print("✅ Fetched question for $cacheKey: $question");
+              }
+            }
+          } catch (e) {
+            print("⚠️ Error fetching extra_info key for $cacheKey: $e");
+          }
+        } else {
+          // If key or value exists in response, cache it
+          final String? question =
+              info['key']?.toString() ?? info['value']?.toString();
+          if (question != null && question.isNotEmpty) {
+            _extraInfoKeysCache[cacheKey] = question;
+          }
+        }
+      }
+    }
   }
 
   Future<void> _loadComplaintsAndShowExtraInfo() async {
@@ -63,13 +122,23 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
 
     for (final complaint in complaints) {
       if (complaint['id'].toString() == _highlightComplaintId) {
-        final List extraInfoList = complaint['extra_info'] ?? [];
+        // Handle both camelCase (extraInfo) and snake_case (extra_info)
+        final List extraInfoList =
+            complaint['extraInfo'] ?? complaint['extra_info'] ?? [];
         for (final info in extraInfoList) {
           if (info['id'].toString() == _highlightExtraInfoId) {
+            // Get the question text from multiple possible fields
+            // Priority: value (question text) > key > other fields
+            final String questionKey =
+                info['value']?.toString() ??
+                info['key']?.toString() ??
+                info['note']?.toString() ??
+                info['description']?.toString() ??
+                'مطلوب معلومات إضافية';
             _showAnswerSheet(
               _highlightComplaintId!,
               _highlightExtraInfoId!,
-              info['key']?.toString() ?? 'مطلوب معلومات إضافية',
+              questionKey,
             );
             // Clear highlight after showing
             setState(() {
@@ -123,12 +192,12 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                         color: Theme.of(
                           context,
                         ).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
                         Icons.info_outline,
                         color: Theme.of(context).colorScheme.primary,
-                        size: 24,
+                        size: 22,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -534,7 +603,16 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                 itemCount: complaints.length,
                 itemBuilder: (context, index) {
                   final complaint = complaints[index];
-                  final List extraInfoList = complaint['extra_info'] ?? [];
+                  // Handle both camelCase (extraInfo) and snake_case (extra_info)
+                  final List extraInfoList =
+                      complaint['extraInfo'] ?? complaint['extra_info'] ?? [];
+
+                  // Debug: Print complaint structure to verify data
+                  if (extraInfoList.isNotEmpty) {
+                    print("📋 Complaint ID: ${complaint['id']}");
+                    print("📋 ExtraInfo list length: ${extraInfoList.length}");
+                    print("📋 ExtraInfo list: $extraInfoList");
+                  }
 
                   // Check if there's a pending extra_info request
                   dynamic firstPendingInfo;
@@ -544,10 +622,76 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                           info['value'] == null ||
                           info['value'].toString().trim().isEmpty,
                     );
+                    // Debug: Print the extra info to verify structure
+                    if (firstPendingInfo != null) {
+                      print("🔍 Found pending extra_info: ${firstPendingInfo}");
+                      print("🔍 All fields: ${firstPendingInfo.keys}");
+                      print("🔍 Key field: ${firstPendingInfo['key']}");
+                      print("🔍 Note field: ${firstPendingInfo['note']}");
+                      print("🔍 Value field: ${firstPendingInfo['value']}");
+                      print(
+                        "🔍 Description field: ${firstPendingInfo['description']}",
+                      );
+                      print(
+                        "🔍 Question field: ${firstPendingInfo['question']}",
+                      );
+                    }
                   } catch (e) {
                     firstPendingInfo = null;
+                    print("⚠️ No pending extra_info found or error: $e");
                   }
                   final bool hasPendingInfo = firstPendingInfo != null;
+
+                  // Get the question/key text - check multiple possible field names
+                  // The backend might use different field names: key, note, value, description, question
+                  String? questionText;
+                  if (firstPendingInfo != null) {
+                    final String complaintId = complaint['id'].toString();
+                    final String infoId = firstPendingInfo['id'].toString();
+                    final String cacheKey = '${complaintId}_$infoId';
+
+                    // First check cache, then check response fields
+                    // Priority: cache > value (question text) > key > other fields
+                    questionText =
+                        _extraInfoKeysCache[cacheKey] ??
+                        firstPendingInfo['value']?.toString() ??
+                        firstPendingInfo['key']?.toString() ??
+                        firstPendingInfo['question']?.toString() ??
+                        firstPendingInfo['note']?.toString() ??
+                        firstPendingInfo['description']?.toString();
+
+                    // If still null, check if it's a nested object
+                    if (questionText == null || questionText.isEmpty) {
+                      if (firstPendingInfo['data'] != null) {
+                        questionText =
+                            firstPendingInfo['data']['key']?.toString() ??
+                            firstPendingInfo['data']['question']?.toString();
+                      }
+                    }
+
+                    // If still null and not in cache, trigger async fetch (will update on next rebuild)
+                    if ((questionText == null || questionText.isEmpty) &&
+                        !_extraInfoKeysCache.containsKey(cacheKey)) {
+                      _service
+                          .getExtraInfoDetails(
+                            complaintId: complaintId,
+                            infoId: infoId,
+                          )
+                          .then((details) {
+                            if (details != null) {
+                              // Store the question text from either 'key' or 'value' field
+                              final String? question =
+                                  details['key']?.toString() ??
+                                  details['value']?.toString();
+                              if (question != null && question.isNotEmpty) {
+                                setState(() {
+                                  _extraInfoKeysCache[cacheKey] = question;
+                                });
+                              }
+                            }
+                          });
+                    }
+                  }
 
                   return Card(
                     margin: const EdgeInsets.symmetric(
@@ -571,12 +715,21 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                     ),
                     child: InkWell(
                       onTap: hasPendingInfo && firstPendingInfo != null
-                          ? () => _showAnswerSheet(
-                              complaint['id'].toString(),
-                              firstPendingInfo['id'].toString(),
-                              firstPendingInfo['key']?.toString() ??
-                                  'مطلوب معلومات إضافية',
-                            )
+                          ? () {
+                              // Get the question text from multiple possible fields
+                              // Priority: value (question text) > key > other fields
+                              final String questionKey =
+                                  firstPendingInfo['value']?.toString() ??
+                                  firstPendingInfo['key']?.toString() ??
+                                  firstPendingInfo['note']?.toString() ??
+                                  firstPendingInfo['description']?.toString() ??
+                                  'مطلوب معلومات إضافية';
+                              _showAnswerSheet(
+                                complaint['id'].toString(),
+                                firstPendingInfo['id'].toString(),
+                                questionKey,
+                              );
+                            }
                           : null,
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
@@ -592,19 +745,16 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                                 children: [
                                   Row(
                                     children: [
-                                      if (hasPendingInfo)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            right: 8,
-                                          ),
-                                          child: Icon(
-                                            Icons.info_outline,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                            size: 20,
-                                          ),
+                                      if (hasPendingInfo) ...[
+                                        Icon(
+                                          Icons.info_outline,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                          size: 20,
                                         ),
+                                        const SizedBox(width: 12),
+                                      ],
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 10,
@@ -665,37 +815,71 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                                   ),
                                 ],
                               ),
-                              if (hasPendingInfo) ...[
+                              if (hasPendingInfo &&
+                                  firstPendingInfo != null) ...[
                                 const SizedBox(height: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
-                                    vertical: 6,
+                                    vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.primary.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary.withOpacity(0.3),
+                                      width: 1,
+                                    ),
                                   ),
-                                  child: Row(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Icon(
-                                        Icons.pending_actions,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                        size: 16,
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.pending_actions,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            size: 16,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'مطلوب معلومات إضافية:',
+                                            style: TextStyle(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'مطلوب معلومات إضافية',
-                                        style: TextStyle(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                                      const SizedBox(height: 8),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
+                                        child: Text(
+                                          questionText != null &&
+                                                  questionText.isNotEmpty
+                                              ? questionText
+                                              : 'معلومات إضافية',
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                            height: 1.4,
+                                          ),
+                                          textAlign: TextAlign.start,
                                         ),
                                       ),
                                     ],

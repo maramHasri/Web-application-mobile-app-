@@ -456,7 +456,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                    color: const Color(0xFF1F4E79).withOpacity(0.5),
+                    color: Color.fromARGB(255, 40, 100, 156).withOpacity(0.5),
                     width: 1,
                   ),
                 ),
@@ -494,7 +494,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
                   icon: Icon(Icons.image),
                   label: Text(isEnglish ? "Choose Photos" : "اختيار صور"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1F4E79),
+                    backgroundColor: Color.fromARGB(255, 40, 100, 156),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -540,7 +540,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
                   icon: Icon(Icons.attach_file),
                   label: Text(isEnglish ? "Choose Files" : "اختيار ملفات"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1F4E79),
+                    backgroundColor: Color.fromARGB(255, 40, 100, 156),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -581,7 +581,7 @@ class _ComplaintStepTwoState extends State<ComplaintStepTwo> {
                           )
                         : Text(isEnglish ? "Send Complaint" : "إرسال الشكوى"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1F4E79),
+                      backgroundColor: Color.fromARGB(255, 40, 100, 156),
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

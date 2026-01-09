@@ -55,6 +55,50 @@ class GetComplaintService {
     }
   }
 
+  Future<Map<String, dynamic>?> getExtraInfoDetails({
+    required String complaintId,
+    required String infoId,
+  }) async {
+    try {
+      String? userToken = await storage.read(key: 'userToken');
+
+      if (userToken == null || userToken.isEmpty) {
+        print("Error: User token is empty!");
+        return null;
+      }
+
+      final response = await dio.get(
+        "/user/complaints/$complaintId/extra_info/$infoId",
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $userToken',
+            'accept': 'application/json',
+          },
+          validateStatus: (_) => true,
+        ),
+      );
+
+      print("📥 Get extra info response status: ${response.statusCode}");
+      print("📥 Get extra info response body: ${response.data}");
+
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        return response.data["data"] as Map<String, dynamic>?;
+      } else if (response.statusCode == 404) {
+        print(
+          "⚠️ Extra info endpoint not found (404). Backend might not have this endpoint.",
+        );
+        print(
+          "💡 Solution: Backend should include 'key' field in /user/complaints response.",
+        );
+      }
+
+      return null;
+    } catch (e) {
+      print("Exception while fetching extra info details: $e");
+      return null;
+    }
+  }
+
   Future<bool> answerExtraInfo({
     required String complaintId,
     required String infoId,
@@ -93,6 +137,9 @@ class GetComplaintService {
           validateStatus: (_) => true,
         ),
       );
+
+      print("📤 Answer extra info response status: ${response.statusCode}");
+      print("📤 Answer extra info response body: ${response.data}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print("✅ Extra info answered successfully");
